@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CKA 치트시트</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.cmd-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
+.cmd-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; user-select: none; }
+.cmd-head:hover { background: var(--bg3); }
+.cmd-label { font-size: 13px; font-weight: 500; color: var(--text); }
+.cmd-body { border-top: 1px solid var(--border); }
+.cmd-desc { padding: 8px 14px; font-size: 12px; color: var(--text2); line-height: 1.6; background: var(--bg3); border-top: 1px solid var(--border); }
+.cmd-arrow { font-size: 13px; color: var(--text3); transition: transform .2s; }
+.cmd-arrow.open { transform: rotate(180deg); }
+</style>
+</head>
+<body>
+<nav>
+  <span class="nav-logo">CKA <span>플랜</span></span>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">🏠 <span>홈</span></a>
+    <a class="nav-link" href="tracker.html">✅ <span>트래커</span></a>
+    <a class="nav-link active" href="cheatsheet.html">📌 <span>치트시트</span></a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-btn" id="theme-btn">🌙</button>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-title">📌 CKA 치트시트</div>
+  <div class="page-sub">시험 중 바로 꺼내 쓰는 핵심 커맨드 모음 — 복사 버튼으로 빠르게</div>
+
+  <div id="tab-group" class="tabs">
+    <button class="tab-btn" data-tab="start">🚀 시작 루틴</button>
+    <button class="tab-btn" data-tab="etcd">⭐ etcd 백업</button>
+    <button class="tab-btn" data-tab="basic">기본 커맨드</button>
+    <button class="tab-btn" data-tab="rbac">RBAC</button>
+    <button class="tab-btn" data-tab="network">네트워크</button>
+    <button class="tab-btn" data-tab="storage">스토리지</button>
+    <button class="tab-btn" data-tab="trouble">트러블슈팅</button>
+    <button class="tab-btn" data-tab="links">🔗 링크</button>
+  </div>
+
+  <!-- 시작 루틴 -->
+  <div class="tab-panel" id="tab-start">
+    <div class="section">
+      <div class="sec-label">시험 시작 즉시 실행 (30초) — 이 3개가 합격률을 가른다</div>
+      <div class="cmd-card">
+        <div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">① alias 설정</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-red">필수</span><span class="cmd-arrow">▾</span></div></div>
+        <div class="cmd-body" style="display:none">
+          <div class="code-block"><pre class="code-text">alias k=kubectl</pre><button class="copy-btn" onclick="copyCode(this,'alias k=kubectl')">복사</button></div>
+          <div class="cmd-desc">k 로 kubectl 대신 사용. 타이핑 속도 2배 향상.</div>
+        </div>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">② kubectl 자동완성</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-red">필수</span><span class="cmd-arrow">▾</span></div></div>
+        <div class="cmd-body" style="display:none">
+          <div class="code-block"><pre class="code-text">source &lt;(kubectl completion bash)
+complete -F __start_kubectl k</pre><button class="copy-btn" onclick="copyCode(this,'source <(kubectl completion bash)\ncomplete -F __start_kubectl k')">복사</button></div>
+          <div class="cmd-desc">Tab 자동완성 활성화. alias k 에도 자동완성 적용.</div>
+        </div>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">③ context 전환 (매 문제마다!)</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-red">필수</span><span class="cmd-arrow">▾</span></div></div>
+        <div class="cmd-body" style="display:none">
+          <div class="code-block"><pre class="code-text">kubectl config use-context &lt;문제에서 제시한 context명&gt;</pre><button class="copy-btn" onclick="copyCode(this,'kubectl config use-context ')">복사</button></div>
+          <div class="cmd-desc">⚠️ 가장 흔한 실점 원인! 매 문제 시작 전 반드시 실행.</div>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="sec-label">dry-run으로 YAML 빠르게 생성</div>
+      <div class="cmd-card">
+        <div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">Pod YAML 생성</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-green">자주씀</span><span class="cmd-arrow">▾</span></div></div>
+        <div class="cmd-body" style="display:none">
+          <div class="code-block"><pre class="code-text">kubectl run nginx --image=nginx --dry-run=client -o yaml > pod.yaml</pre><button class="copy-btn" onclick="copyCode(this,'kubectl run nginx --image=nginx --dry-run=client -o yaml > pod.yaml')">복사</button></div>
+        </div>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">Deployment YAML 생성</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-green">자주씀</span><span class="cmd-arrow">▾</span></div></div>
+        <div class="cmd-body" style="display:none">
+          <div class="code-block"><pre class="code-text">kubectl create deployment nginx --image=nginx --replicas=3 --dry-run=client -o yaml > deploy.yaml</pre><button class="copy-btn" onclick="copyCode(this,'kubectl create deployment nginx --image=nginx --replicas=3 --dry-run=client -o yaml > deploy.yaml')">복사</button></div>
+        </div>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">Service YAML 생성</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-green">자주씀</span><span class="cmd-arrow">▾</span></div></div>
+        <div class="cmd-body" style="display:none">
+          <div class="code-block"><pre class="code-text">kubectl expose deployment nginx --port=80 --type=NodePort --dry-run=client -o yaml > svc.yaml</pre><button class="copy-btn" onclick="copyCode(this,'kubectl expose deployment nginx --port=80 --type=NodePort --dry-run=client -o yaml > svc.yaml')">복사</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- etcd -->
+  <div class="tab-panel" id="tab-etcd">
+    <div class="section">
+      <div class="sec-label">etcd 백업 / 복원 — 시험 단골 ⭐ 외울 때까지 반복</div>
+      <div class="cmd-card">
+        <div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">스냅샷 백업</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-red">시험 단골</span><span class="cmd-arrow">▾</span></div></div>
+        <div class="cmd-body" style="display:none">
+          <div class="code-block"><pre class="code-text">ETCDCTL_API=3 etcdctl snapshot save /backup/etcd.db \
+  --endpoints=https://127.0.0.1:2379 \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/server.crt \
+  --key=/etc/kubernetes/pki/etcd/server.key</pre><button class="copy-btn" onclick="copyCode(this,'ETCDCTL_API=3 etcdctl snapshot save /backup/etcd.db \\\n  --endpoints=https://127.0.0.1:2379 \\\n  --cacert=/etc/kubernetes/pki/etcd/ca.crt \\\n  --cert=/etc/kubernetes/pki/etcd/server.crt \\\n  --key=/etc/kubernetes/pki/etcd/server.key')">복사</button></div>
+          <div class="cmd-desc">백업 경로는 문제에서 지정해줌. 인증서는 항상 /etc/kubernetes/pki/etcd/ 안에 있음.</div>
+        </div>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">백업 검증</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-gray">확인</span><span class="cmd-arrow">▾</span></div></div>
+        <div class="cmd-body" style="display:none">
+          <div class="code-block"><pre class="code-text">ETCDCTL_API=3 etcdctl snapshot status /backup/etcd.db --write-out=table</pre><button class="copy-btn" onclick="copyCode(this,'ETCDCTL_API=3 etcdctl snapshot status /backup/etcd.db --write-out=table')">복사</button></div>
+        </div>
+      </div>
+      <div class="cmd-card">
+        <div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">스냅샷 복원</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-red">시험 단골</span><span class="cmd-arrow">▾</span></div></div>
+        <div class="cmd-body" style="display:none">
+          <div class="code-block"><pre class="code-text">ETCDCTL_API=3 etcdctl snapshot restore /backup/etcd.db \
+  --data-dir=/var/lib/etcd-restore</pre><button class="copy-btn" onclick="copyCode(this,'ETCDCTL_API=3 etcdctl snapshot restore /backup/etcd.db \\\n  --data-dir=/var/lib/etcd-restore')">복사</button></div>
+          <div class="cmd-desc">복원 후 /etc/kubernetes/manifests/etcd.yaml 의 --data-dir 경로도 수정 필요!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 기본 커맨드 -->
+  <div class="tab-panel" id="tab-basic">
+    <div class="section">
+      <div class="sec-label">조회 / 확인</div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">전체 NS Pod 조회</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-green">자주씀</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl get pods -o wide --all-namespaces</pre><button class="copy-btn" onclick="copyCode(this,'kubectl get pods -o wide --all-namespaces')">복사</button></div></div></div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">Pod 상세 정보</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-green">자주씀</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl describe pod &lt;name&gt; -n &lt;namespace&gt; | grep -A10 Events</pre><button class="copy-btn" onclick="copyCode(this,'kubectl describe pod <name> -n <namespace> | grep -A10 Events')">복사</button></div></div></div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">Pod 로그</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-green">자주씀</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl logs &lt;pod&gt; -c &lt;container&gt; --previous --tail=50</pre><button class="copy-btn" onclick="copyCode(this,'kubectl logs <pod> -c <container> --previous --tail=50')">복사</button></div><div class="cmd-desc">--previous: 재시작 전 컨테이너 로그</div></div></div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">리소스 사용량 (CPU 정렬)</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-gray">모니터링</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl top nodes
+kubectl top pods -A --sort-by=cpu</pre><button class="copy-btn" onclick="copyCode(this,'kubectl top nodes\nkubectl top pods -A --sort-by=cpu')">복사</button></div></div></div>
+    </div>
+    <div class="section">
+      <div class="sec-label">롤아웃 / 스케일</div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">롤아웃 상태 / 이력 / 롤백</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-blue">Deployment</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl rollout status deployment/&lt;name&gt;
+kubectl rollout history deployment/&lt;name&gt;
+kubectl rollout undo deployment/&lt;name&gt;
+kubectl rollout undo deployment/&lt;name&gt; --to-revision=2</pre><button class="copy-btn" onclick="copyCode(this,'kubectl rollout status deployment/<name>\nkubectl rollout history deployment/<name>\nkubectl rollout undo deployment/<name>')">복사</button></div></div></div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">스케일링</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-blue">Deployment</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl scale deployment &lt;name&gt; --replicas=3</pre><button class="copy-btn" onclick="copyCode(this,'kubectl scale deployment <name> --replicas=3')">복사</button></div></div></div>
+    </div>
+    <div class="section">
+      <div class="sec-label">노드 관리</div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">drain / cordon / uncordon</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-orange">유지보수</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl drain &lt;node&gt; --ignore-daemonsets --delete-emptydir-data
+kubectl cordon &lt;node&gt;
+kubectl uncordon &lt;node&gt;</pre><button class="copy-btn" onclick="copyCode(this,'kubectl drain <node> --ignore-daemonsets --delete-emptydir-data\nkubectl cordon <node>\nkubectl uncordon <node>')">복사</button></div></div></div>
+    </div>
+    <div class="section">
+      <div class="sec-label">JSONPath / 고급 출력</div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">jsonpath 예시</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-gray">JSONPath</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl get pods -o jsonpath='{.items[*].metadata.name}'
+kubectl get nodes -o jsonpath='{.items[*].status.nodeInfo.osImage}'
+kubectl get pods --sort-by=.metadata.creationTimestamp</pre><button class="copy-btn" onclick="copyCode(this,`kubectl get pods -o jsonpath='{.items[*].metadata.name}'\nkubectl get nodes -o jsonpath='{.items[*].status.nodeInfo.osImage}'\nkubectl get pods --sort-by=.metadata.creationTimestamp`)">복사</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- RBAC -->
+  <div class="tab-panel" id="tab-rbac">
+    <div class="section">
+      <div class="sec-label">RBAC 4가지 조합 — 전부 외우기</div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">① User + Role (네임스페이스 범위)</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-red">시험 단골</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl create role &lt;role&gt; --verb=get,list,watch --resource=pods -n &lt;ns&gt;
+kubectl create rolebinding &lt;rb&gt; --role=&lt;role&gt; --user=&lt;user&gt; -n &lt;ns&gt;</pre><button class="copy-btn" onclick="copyCode(this,'kubectl create role <role> --verb=get,list,watch --resource=pods -n <ns>\nkubectl create rolebinding <rb> --role=<role> --user=<user> -n <ns>')">복사</button></div></div></div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">② User + ClusterRole (클러스터 범위)</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-red">시험 단골</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl create clusterrole &lt;cr&gt; --verb=get,list --resource=pods
+kubectl create clusterrolebinding &lt;crb&gt; --clusterrole=&lt;cr&gt; --user=&lt;user&gt;</pre><button class="copy-btn" onclick="copyCode(this,'kubectl create clusterrole <cr> --verb=get,list --resource=pods\nkubectl create clusterrolebinding <crb> --clusterrole=<cr> --user=<user>')">복사</button></div></div></div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">③ ServiceAccount + Role</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-blue">SA</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl create serviceaccount &lt;sa&gt; -n &lt;ns&gt;
+kubectl create rolebinding &lt;rb&gt; --role=&lt;role&gt; --serviceaccount=&lt;ns&gt;:&lt;sa&gt; -n &lt;ns&gt;</pre><button class="copy-btn" onclick="copyCode(this,'kubectl create serviceaccount <sa> -n <ns>\nkubectl create rolebinding <rb> --role=<role> --serviceaccount=<ns>:<sa> -n <ns>')">복사</button></div></div></div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">④ ServiceAccount + ClusterRole</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-blue">SA</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl create clusterrolebinding &lt;crb&gt; --clusterrole=&lt;cr&gt; --serviceaccount=&lt;ns&gt;:&lt;sa&gt;</pre><button class="copy-btn" onclick="copyCode(this,'kubectl create clusterrolebinding <crb> --clusterrole=<cr> --serviceaccount=<ns>:<sa>')">복사</button></div></div></div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">권한 확인</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-gray">확인</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl auth can-i get pods --as=&lt;user&gt; -n &lt;ns&gt;
+kubectl auth can-i --list --as=&lt;user&gt; -n &lt;ns&gt;</pre><button class="copy-btn" onclick="copyCode(this,'kubectl auth can-i get pods --as=<user> -n <ns>\nkubectl auth can-i --list --as=<user> -n <ns>')">복사</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- 네트워크 -->
+  <div class="tab-panel" id="tab-network">
+    <div class="section">
+      <div class="sec-label">Service</div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">Service 노출</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-green">자주씀</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl expose pod &lt;pod&gt; --port=80 --target-port=8080 --type=ClusterIP
+kubectl expose deployment &lt;name&gt; --port=80 --type=NodePort --name=&lt;svc&gt;</pre><button class="copy-btn" onclick="copyCode(this,'kubectl expose pod <pod> --port=80 --target-port=8080 --type=ClusterIP\nkubectl expose deployment <name> --port=80 --type=NodePort --name=<svc>')">복사</button></div></div></div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">DNS 이름 규칙</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-gray">암기</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">&lt;service-name&gt;.&lt;namespace&gt;.svc.cluster.local</pre><button class="copy-btn" onclick="copyCode(this,'<service-name>.<namespace>.svc.cluster.local')">복사</button></div></div></div>
+    </div>
+    <div class="section">
+      <div class="sec-label">NetworkPolicy</div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">deny-all + 예외 허용 패턴</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-orange">NetworkPolicy</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-specific
+  namespace: &lt;ns&gt;
+spec:
+  podSelector:
+    matchLabels:
+      app: &lt;app&gt;
+  policyTypes: [Ingress]
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: &lt;allowed-app&gt;
+    ports:
+    - port: 80</pre><button class="copy-btn" onclick="copyCode(this,'apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: allow-specific\nspec:\n  podSelector:\n    matchLabels:\n      app: <app>\n  policyTypes: [Ingress]\n  ingress:\n  - from:\n    - podSelector:\n        matchLabels:\n          app: <allowed-app>\n    ports:\n    - port: 80')">복사</button></div></div></div>
+    </div>
+    <div class="section">
+      <div class="sec-label">디버깅</div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">CNI 플러그인 경로</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-gray">확인</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">ls /etc/cni/net.d/
+ls /opt/cni/bin/</pre><button class="copy-btn" onclick="copyCode(this,'ls /etc/cni/net.d/\nls /opt/cni/bin/')">복사</button></div></div></div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">CoreDNS ConfigMap</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-gray">확인</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl get configmap coredns -n kube-system -o yaml
+kubectl edit configmap coredns -n kube-system</pre><button class="copy-btn" onclick="copyCode(this,'kubectl get configmap coredns -n kube-system -o yaml')">복사</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- 스토리지 -->
+  <div class="tab-panel" id="tab-storage">
+    <div class="section">
+      <div class="sec-label">PersistentVolume / PersistentVolumeClaim</div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">PV YAML 기본 구조</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-blue">PV</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: my-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /data/pv</pre><button class="copy-btn" onclick="copyCode(this,'apiVersion: v1\nkind: PersistentVolume\nmetadata:\n  name: my-pv\nspec:\n  capacity:\n    storage: 1Gi\n  accessModes:\n    - ReadWriteOnce\n  persistentVolumeReclaimPolicy: Retain\n  hostPath:\n    path: /data/pv')">복사</button></div></div></div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">PVC YAML 기본 구조</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-blue">PVC</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: ""</pre><button class="copy-btn" onclick="copyCode(this,'apiVersion: v1\nkind: PersistentVolumeClaim\nmetadata:\n  name: my-pvc\nspec:\n  accessModes:\n    - ReadWriteOnce\n  resources:\n    requests:\n      storage: 1Gi\n  storageClassName: \"\"')">복사</button></div></div></div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">accessModes 3가지</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-gray">암기</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">ReadWriteOnce  (RWO) — 단일 노드 읽기/쓰기
+ReadOnlyMany   (ROX) — 다수 노드 읽기만
+ReadWriteMany  (RWX) — 다수 노드 읽기/쓰기</pre><button class="copy-btn" onclick="copyCode(this,'ReadWriteOnce  (RWO)\nReadOnlyMany   (ROX)\nReadWriteMany  (RWX)')">복사</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- 트러블슈팅 -->
+  <div class="tab-panel" id="tab-trouble">
+    <div class="section">
+      <div class="sec-label">트러블슈팅 순서 — Pod → Node → Control Plane</div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">1단계: Pod 상태 확인</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-red">1단계</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl describe pod &lt;pod&gt; -n &lt;ns&gt; | grep -A10 Events
+kubectl logs &lt;pod&gt; --previous
+kubectl get pod &lt;pod&gt; -o yaml | grep -A5 status</pre><button class="copy-btn" onclick="copyCode(this,'kubectl describe pod <pod> -n <ns> | grep -A10 Events\nkubectl logs <pod> --previous\nkubectl get pod <pod> -o yaml | grep -A5 status')">복사</button></div></div></div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">2단계: Node 상태 확인</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-orange">2단계</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl describe node &lt;node&gt; | grep -A10 Conditions
+ssh &lt;node&gt;
+systemctl status kubelet
+journalctl -u kubelet -n 50 --no-pager</pre><button class="copy-btn" onclick="copyCode(this,'kubectl describe node <node> | grep -A10 Conditions\nsystemctl status kubelet\njournalctl -u kubelet -n 50 --no-pager')">복사</button></div></div></div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">3단계: Control Plane 확인</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-gray">3단계</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">kubectl get pods -n kube-system
+kubectl logs kube-apiserver-&lt;node&gt; -n kube-system
+ls /etc/kubernetes/manifests/
+cat /etc/kubernetes/manifests/kube-apiserver.yaml</pre><button class="copy-btn" onclick="copyCode(this,'kubectl get pods -n kube-system\nkubectl logs kube-apiserver-<node> -n kube-system\nls /etc/kubernetes/manifests/')">복사</button></div></div></div>
+      <div class="cmd-card"><div class="cmd-head" onclick="togCmd(this)"><span class="cmd-label">수정 후 재시작</span><div style="display:flex;align-items:center;gap:8px"><span class="badge badge-gray">수정 후</span><span class="cmd-arrow">▾</span></div></div><div class="cmd-body" style="display:none"><div class="code-block"><pre class="code-text">systemctl daemon-reload
+systemctl restart kubelet</pre><button class="copy-btn" onclick="copyCode(this,'systemctl daemon-reload\nsystemctl restart kubelet')">복사</button></div></div></div>
+    </div>
+  </div>
+
+  <!-- 링크 -->
+  <div class="tab-panel" id="tab-links">
+    <div class="section">
+      <div class="sec-label">학습 자료</div>
+      <a class="link-item" href="https://youtube.com/playlist?list=PLApuRlvrZKohaBHvXAOhUD-RxD0uQ3z0c" target="_blank" style="text-decoration:none"><div><div class="link-name">📺 따배쿠 재생목록</div><div class="link-url">youtube.com — 35개 영상</div></div><span class="link-btn">열기</span></a>
+      <a class="link-item" href="https://youtube.com/playlist?list=PLApuRlvrZKojqx9-wIvWP3MPtgy2B372f" target="_blank" style="text-decoration:none"><div><div class="link-name">🎯 따배씨 재생목록</div><div class="link-url">youtube.com — 32개 영상</div></div><span class="link-btn">열기</span></a>
+      <a class="link-item" href="https://learn.kodekloud.com" target="_blank" style="text-decoration:none"><div><div class="link-name">🖥 KodeKloud CKA</div><div class="link-url">learn.kodekloud.com — 60+ 랩</div></div><span class="link-btn">열기</span></a>
+      <a class="link-item" href="https://killercoda.com/killer-shell-cka" target="_blank" style="text-decoration:none"><div><div class="link-name">⚡ Killercoda CKA</div><div class="link-url">killercoda.com — 무료 시나리오</div></div><span class="link-btn">열기</span></a>
+      <a class="link-item" href="https://killer.sh" target="_blank" style="text-decoration:none"><div><div class="link-name">💀 killer.sh</div><div class="link-url">killer.sh — 모의고사 2회</div></div><span class="link-btn">열기</span></a>
+      <a class="link-item" href="https://kubernetes.io/docs" target="_blank" style="text-decoration:none"><div><div class="link-name">📖 k8s 공식문서</div><div class="link-url">kubernetes.io/docs — 시험 중 사용 가능</div></div><span class="link-btn">열기</span></a>
+    </div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+function togCmd(head) {
+  const body = head.nextElementSibling;
+  const arrow = head.querySelector('.cmd-arrow');
+  const open = body.style.display === 'none' || body.style.display === '';
+  body.style.display = open ? 'block' : 'none';
+  if (arrow) arrow.classList.toggle('open', open);
+}
+document.addEventListener('DOMContentLoaded', () => {
+  initTabs('tab-group');
+});
+</script>
+</body>
+</html>
