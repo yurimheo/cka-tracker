@@ -38,11 +38,12 @@ function copyCode(btn, text) {
 function initTabs(groupId) {
   const group = document.getElementById(groupId);
   if (!group) return;
+  const panels = document.querySelectorAll('.tab-panel');
   group.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const target = btn.dataset.tab;
       group.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('on', b === btn));
-      group.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('on', p.id === 'tab-' + target));
+      panels.forEach(p => p.classList.toggle('on', p.id === 'tab-' + target));
     });
   });
   // activate first
