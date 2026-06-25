@@ -31,6 +31,7 @@
 .action-btn:hover { opacity: .85; }
 .ghost-btn { background: var(--bg2); color: var(--text2); }
 .empty-note { color: var(--text3); font-size: 12px; padding: 12px 2px; }
+.sync-note { color: var(--text3); font-size: 11px; line-height: 1.5; margin-top: 8px; }
 .delete-btn {
   border: none; border-radius: 6px; background: var(--red-bg); color: var(--red-text);
   font-family: inherit; font-size: 10px; font-weight: 600; padding: 4px 8px; cursor: pointer;
@@ -309,6 +310,7 @@ systemctl restart kubelet</pre><button class="copy-btn" onclick="copyCode(this,'
           <button class="action-btn ghost-btn" type="reset">초기화</button>
           <button class="action-btn" type="submit">저장</button>
         </div>
+        <div class="sync-note">여기서 저장한 항목은 현재 브라우저에만 저장됩니다. 여러 기기에서 같이 볼 항목은 custom-cheats.json에 추가한 뒤 push하면 됩니다.</div>
       </form>
       <div id="custom-list"></div>
     </div>
@@ -339,6 +341,7 @@ function togCmd(head) {
 }
 
 const CUSTOM_CHEATS_KEY = 'cka-custom-cheats-v1';
+let sharedCustomCheats = [];
 
 function getCustomCheats() {
   try {
@@ -352,6 +355,17 @@ function saveCustomCheats(items) {
   localStorage.setItem(CUSTOM_CHEATS_KEY, JSON.stringify(items));
 }
 
+async function loadSharedCustomCheats() {
+  try {
+    const res = await fetch('custom-cheats.json?v=' + Date.now());
+    if (!res.ok) return [];
+    const items = await res.json();
+    return Array.isArray(items) ? items : [];
+  } catch(e) {
+    return [];
+  }
+}
+
 function makeTextEl(tag, className, text) {
   const el = document.createElement(tag);
   el.className = className;
@@ -363,7 +377,13 @@ function renderCustomCheats() {
   const list = document.getElementById('custom-list');
   if (!list) return;
 
-  const items = getCustomCheats();
+  const sharedItems = sharedCustomCheats.map((item, index) => ({
+    ...item,
+    id: item.id || 'shared-' + index,
+    source: 'shared'
+  }));
+  const localItems = getCustomCheats().map(item => ({ ...item, source: 'local' }));
+  const items = [...sharedItems, ...localItems];
   list.innerHTML = '';
 
   if (!items.length) {
@@ -386,18 +406,20 @@ function renderCustomCheats() {
     right.style.alignItems = 'center';
     right.style.gap = '8px';
 
-    const del = document.createElement('button');
-    del.className = 'delete-btn';
-    del.type = 'button';
-    del.textContent = '삭제';
-    del.addEventListener('click', event => {
-      event.stopPropagation();
-      saveCustomCheats(getCustomCheats().filter(saved => saved.id !== item.id));
-      renderCustomCheats();
-    });
-
-    right.appendChild(makeTextEl('span', 'badge badge-accent', '내 항목'));
-    right.appendChild(del);
+    const isShared = item.source === 'shared';
+    right.appendChild(makeTextEl('span', isShared ? 'badge badge-blue' : 'badge badge-accent', isShared ? '공유' : '개인'));
+    if (!isShared) {
+      const del = document.createElement('button');
+      del.className = 'delete-btn';
+      del.type = 'button';
+      del.textContent = '삭제';
+      del.addEventListener('click', event => {
+        event.stopPropagation();
+        saveCustomCheats(getCustomCheats().filter(saved => saved.id !== item.id));
+        renderCustomCheats();
+      });
+      right.appendChild(del);
+    }
     right.appendChild(makeTextEl('span', 'cmd-arrow', '▾'));
     head.appendChild(right);
 
@@ -428,7 +450,7 @@ function renderCustomCheats() {
   });
 }
 
-function initCustomCheats() {
+async function initCustomCheats() {
   const form = document.getElementById('custom-form');
   if (!form) return;
 
@@ -447,6 +469,8 @@ function initCustomCheats() {
     renderCustomCheats();
   });
 
+  renderCustomCheats();
+  sharedCustomCheats = await loadSharedCustomCheats();
   renderCustomCheats();
 }
 
