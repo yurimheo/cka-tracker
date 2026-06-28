@@ -65,6 +65,8 @@ const CLOUD_CFG_KEY = 'cka-github-sync-v1';
 const CLOUD_DEFAULT_PATH = 'tracker-state.json';
 let _state = null;
 let _cloudTimer = null;
+let _cloudPushInFlight = false;
+let _cloudPushQueued = false;
 
 function getState() {
   if (_state) return _state;
@@ -143,30 +145,56 @@ async function pushCloudState(message = 'Update CKA tracker state') {
     cloudStatus('GitHub sync is not configured.', true);
     return false;
   }
-  cloudStatus('Syncing to GitHub...');
-  const remote = await fetchCloudFile(cfg);
-  const body = {
-    message,
-    content: encodeBase64Unicode(JSON.stringify({
-      updatedAt: new Date().toISOString(),
-      state: getState()
-    }, null, 2)),
-    branch: cfg.branch || 'main'
-  };
-  if (remote.sha) body.sha = remote.sha;
+  if (_cloudPushInFlight) {
+    _cloudPushQueued = true;
+    cloudStatus('Sync queued...');
+    return false;
+  }
 
-  const res = await fetch(cloudWriteUrl(cfg), {
-    method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${cfg.token}`,
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28'
-    },
-    body: JSON.stringify(body)
-  });
-  if (!res.ok) throw new Error(`GitHub write failed (${res.status})`);
-  cloudStatus(`Synced ${new Date().toLocaleTimeString()}`);
-  return true;
+  _cloudPushInFlight = true;
+  try {
+    cloudStatus('Syncing to GitHub...');
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const remote = await fetchCloudFile(cfg);
+      const body = {
+        message,
+        content: encodeBase64Unicode(JSON.stringify({
+          updatedAt: new Date().toISOString(),
+          state: getState()
+        }, null, 2)),
+        branch: cfg.branch || 'main'
+      };
+      if (remote.sha) body.sha = remote.sha;
+
+      const res = await fetch(cloudWriteUrl(cfg), {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${cfg.token}`,
+          Accept: 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28'
+        },
+        body: JSON.stringify(body)
+      });
+      if (res.ok) {
+        cloudStatus(`Synced ${new Date().toLocaleTimeString()}`);
+        return true;
+      }
+      if (res.status === 409 && attempt === 0) continue;
+      let detail = '';
+      try { detail = (await res.json()).message || ''; } catch(e) {}
+      throw new Error(`GitHub write failed (${res.status})${detail ? ': ' + detail : ''}`);
+    }
+    return false;
+  } finally {
+    _cloudPushInFlight = false;
+    if (_cloudPushQueued) {
+      _cloudPushQueued = false;
+      clearTimeout(_cloudTimer);
+      _cloudTimer = setTimeout(() => {
+        pushCloudState().catch(e => cloudStatus(e.message, true));
+      }, 800);
+    }
+  }
 }
 async function pullCloudState() {
   const cfg = getCloudConfig();
@@ -194,7 +222,7 @@ function scheduleCloudPush() {
   clearTimeout(_cloudTimer);
   _cloudTimer = setTimeout(() => {
     pushCloudState().catch(e => cloudStatus(e.message, true));
-  }, 900);
+  }, 2500);
 }
 function renderSyncPanel() {
   const panel = document.getElementById('sync-panel');
