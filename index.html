@@ -72,6 +72,25 @@
 .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; text-align: center; }
 .stat-val { font-size: 26px; font-weight: 700; color: var(--text); }
 .stat-lbl { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+/* Exam details */
+.exam-brief { margin-bottom: 16px; }
+.exam-brief-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.exam-brief-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.exam-brief-sub { font-size: 12px; color: var(--text2); margin-top: 3px; line-height: 1.55; }
+.exam-mode { display: flex; gap: 8px; flex-wrap: wrap; }
+.exam-pill { font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 999px; background: var(--bg3); color: var(--text2); white-space: nowrap; }
+.exam-pill.hot { background: var(--red-bg); color: var(--red-text); }
+.exam-domain-list { display: grid; gap: 8px; }
+.exam-domain { display: grid; grid-template-columns: 1fr 54px; gap: 12px; align-items: center; }
+.exam-domain-name { font-size: 12px; color: var(--text); }
+.exam-domain-weight { font-size: 12px; font-weight: 700; color: var(--text); text-align: right; }
+.exam-weight-track { grid-column: 1 / -1; height: 6px; background: var(--bg3); border-radius: 999px; overflow: hidden; }
+.exam-weight-fill { height: 100%; background: var(--accent); border-radius: 999px; }
+.exam-domain.top .exam-weight-fill { background: var(--red-text); }
+.exam-domain.top .exam-domain-weight { color: var(--red-text); }
+.exam-note { margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text2); line-height: 1.55; }
+@media (max-width: 600px) { .exam-brief-head { display: block; } .exam-mode { margin-top: 10px; } }
 </style>
 </head>
 <body>
@@ -103,6 +122,48 @@
     </div>
   </div>
 
+  <!-- Exam Details -->
+  <div class="card exam-brief">
+    <div class="exam-brief-head">
+      <div>
+        <div class="exam-brief-title">CKA 시험 핵심 정보</div>
+        <div class="exam-brief-sub">온라인 시험은 커맨드라인에서 직접 문제를 해결하는 실습형 시험이며, 제한 시간은 2시간입니다.</div>
+      </div>
+      <div class="exam-mode">
+        <span class="exam-pill">Performance-based</span>
+        <span class="exam-pill">Command line</span>
+        <span class="exam-pill hot">2 hours</span>
+      </div>
+    </div>
+    <div class="exam-domain-list">
+      <div class="exam-domain">
+        <div class="exam-domain-name">Cluster Architecture, Installation & Configuration</div>
+        <div class="exam-domain-weight">25%</div>
+        <div class="exam-weight-track"><div class="exam-weight-fill" style="width:25%"></div></div>
+      </div>
+      <div class="exam-domain">
+        <div class="exam-domain-name">Workloads & Scheduling</div>
+        <div class="exam-domain-weight">15%</div>
+        <div class="exam-weight-track"><div class="exam-weight-fill" style="width:15%"></div></div>
+      </div>
+      <div class="exam-domain">
+        <div class="exam-domain-name">Services & Networking</div>
+        <div class="exam-domain-weight">20%</div>
+        <div class="exam-weight-track"><div class="exam-weight-fill" style="width:20%"></div></div>
+      </div>
+      <div class="exam-domain">
+        <div class="exam-domain-name">Storage</div>
+        <div class="exam-domain-weight">10%</div>
+        <div class="exam-weight-track"><div class="exam-weight-fill" style="width:10%"></div></div>
+      </div>
+      <div class="exam-domain top">
+        <div class="exam-domain-name">Troubleshooting</div>
+        <div class="exam-domain-weight">30%</div>
+        <div class="exam-weight-track"><div class="exam-weight-fill" style="width:30%"></div></div>
+      </div>
+    </div>
+    <div class="exam-note">가장 큰 비중은 Troubleshooting 30%입니다. 후반부에는 모의고사 점수보다 오답 분석, 장애 원인 찾기, 빠른 명령어 처리에 시간을 더 두는 게 중요합니다.</div>
+  </div>
   <!-- Overall Progress -->
   <div class="card prog-wrap">
     <div class="prog-head"><span>시작 6/29</span><span id="prog-pct">0%</span><span>시험 9/6</span></div>
