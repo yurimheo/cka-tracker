@@ -21,6 +21,18 @@
 .block-title.bp{background:var(--red-bg);color:var(--red-text);}
 .block-title.bd{background:var(--purple-bg);color:var(--purple-text);}
 .block-title.bk{background:var(--gray-bg);color:var(--gray-text);}
+.sync-panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;}
+.sync-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;}
+.sync-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:10px;}
+.sync-input{border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:8px;padding:8px 10px;font:inherit;font-size:12px;min-width:0;}
+.sync-token{grid-column:span 2;}
+.sync-auto{display:flex;align-items:center;gap:6px;color:var(--text2);font-size:12px;}
+.sync-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.sync-btn{border:1px solid var(--border);background:var(--bg3);color:var(--text);border-radius:8px;padding:7px 11px;font:inherit;font-size:12px;cursor:pointer;}
+.sync-btn.primary{background:var(--text);border-color:var(--text);color:var(--bg);}
+.sync-status{font-size:12px;color:var(--text3);}
+.sync-status.err{color:var(--red-text);}
+@media(max-width:640px){.sync-token{grid-column:auto;}}
 </style>
 </head>
 <body>
@@ -51,6 +63,10 @@
     </div>
   </div>
 
+  <div class="sync-panel">
+    <div class="sync-title">GitHub Sync</div>
+    <div id="sync-panel"></div>
+  </div>
   <div class="week-tabs" id="wtabs"></div>
   <div id="week-goal"></div>
   <div id="week-chk"></div>
@@ -115,7 +131,8 @@ function renderWeek(){
 function tItem(wi,di,bi,ii,v){stateSet(sk(wi,di,bi,ii),v);const l=document.querySelector(`label[for="cb${wi}-${di}-${bi}-${ii}"]`);if(l)l.classList.toggle('done',v);updateProg();}
 function tWC(wi,ci,v){stateSet(wck(wi,ci),v);const l=document.querySelector(`label[for="wc${wi}-${ci}"]`);if(l)l.classList.toggle('done',v);updateProg();}
 function saveMemo(wi,di,v){stateSet(`memo-${wi}-${di}`,v);}
-document.addEventListener('DOMContentLoaded',()=>{renderTabs();renderWeek();updateProg();});
+document.addEventListener('DOMContentLoaded',async()=>{await initCloudState();renderTabs();renderWeek();updateProg();});
+document.addEventListener('cka-state-updated',()=>{renderWeek();updateProg();});
 </script>
 </body>
 </html>
