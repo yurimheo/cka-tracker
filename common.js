@@ -83,6 +83,14 @@ function stateSet(key, val) {
 }
 function stateGet(key) { return getState()[key]; }
 
+function getSyncedCustomCheats() {
+  const items = stateGet('customCheats');
+  return Array.isArray(items) ? items : [];
+}
+function setSyncedCustomCheats(items) {
+  stateSet('customCheats', Array.isArray(items) ? items : []);
+}
+
 function getCloudConfig() {
   try { return JSON.parse(localStorage.getItem(CLOUD_CFG_KEY)) || {}; } catch(e) { return {}; }
 }

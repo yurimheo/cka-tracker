@@ -31,7 +31,17 @@
 .action-btn:hover { opacity: .85; }
 .ghost-btn { background: var(--bg2); color: var(--text2); }
 .empty-note { color: var(--text3); font-size: 12px; padding: 12px 2px; }
-.sync-note { color: var(--text3); font-size: 11px; line-height: 1.5; margin-top: 8px; }
+.sync-note { color: var(--text3); font-size: 11px; line-height: 1.5; margin-top: 8px; }`r`n.custom-sync { margin-bottom: 14px; }`r`n.custom-sync summary { cursor: pointer; font-size: 12px; font-weight: 700; color: var(--text); }
+.sync-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:10px;}
+.sync-input{border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:8px;padding:8px 10px;font:inherit;font-size:12px;min-width:0;}
+.sync-token{grid-column:span 2;}
+.sync-auto{display:flex;align-items:center;gap:6px;color:var(--text2);font-size:12px;}
+.sync-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.sync-btn{border:1px solid var(--border);background:var(--bg3);color:var(--text);border-radius:8px;padding:7px 11px;font:inherit;font-size:12px;cursor:pointer;}
+.sync-btn.primary{background:var(--text);border-color:var(--text);color:var(--bg);}
+.sync-status{font-size:12px;color:var(--text3);}
+.sync-status.err{color:var(--red-text);}
+@media(max-width:640px){.sync-token{grid-column:auto;}}
 .delete-btn {
   border: none; border-radius: 6px; background: var(--red-bg); color: var(--red-text);
   font-family: inherit; font-size: 10px; font-weight: 600; padding: 4px 8px; cursor: pointer;
@@ -291,6 +301,10 @@ systemctl restart kubelet</pre><button class="copy-btn" onclick="copyCode(this,'
   <div class="tab-panel" id="tab-custom">
     <div class="section">
       <div class="sec-label">내가 추가한 치트시트</div>
+      <details class="custom-form custom-sync">
+        <summary>GitHub Sync 상태</summary>
+        <div id="sync-panel" style="margin-top:10px"></div>
+      </details>
       <form class="custom-form" id="custom-form">
         <div class="form-grid">
           <label>
@@ -310,7 +324,7 @@ systemctl restart kubelet</pre><button class="copy-btn" onclick="copyCode(this,'
           <button class="action-btn ghost-btn" type="reset">초기화</button>
           <button class="action-btn" type="submit">저장</button>
         </div>
-        <div class="sync-note">여기서 저장한 항목은 현재 브라우저에만 저장됩니다. 여러 기기에서 같이 볼 항목은 custom-cheats.json에 추가한 뒤 push하면 됩니다.</div>
+        <div class="sync-note">저장한 내 항목은 GitHub Sync의 tracker-state.json에 함께 저장됩니다. 다른 PC에서는 같은 설정으로 Pull하면 내 항목도 같이 불러옵니다.</div>
       </form>
       <div id="custom-list"></div>
     </div>
@@ -344,7 +358,7 @@ function togCmd(head) {
 const CUSTOM_CHEATS_KEY = 'cka-custom-cheats-v1';
 let sharedCustomCheats = [];
 
-function getCustomCheats() {
+function getLegacyCustomCheats() {
   try {
     return JSON.parse(localStorage.getItem(CUSTOM_CHEATS_KEY)) || [];
   } catch(e) {
@@ -352,8 +366,20 @@ function getCustomCheats() {
   }
 }
 
-function saveCustomCheats(items) {
-  localStorage.setItem(CUSTOM_CHEATS_KEY, JSON.stringify(items));
+function normalizeCustomCheat(item, fallbackId) {
+  return {
+    id: item.id || fallbackId || Date.now().toString(36),
+    title: item.title || '',
+    command: item.command || '',
+    desc: item.desc || ''
+  };
+}
+
+function migrateLegacyCustomCheats() {
+  const legacy = getLegacyCustomCheats();
+  const synced = getSyncedCustomCheats();
+  if (!legacy.length || synced.length) return;
+  setSyncedCustomCheats(legacy.map((item, index) => normalizeCustomCheat(item, 'legacy-' + index)));
 }
 
 async function loadSharedCustomCheats() {
@@ -379,12 +405,14 @@ function renderCustomCheats() {
   if (!list) return;
 
   const sharedItems = sharedCustomCheats.map((item, index) => ({
-    ...item,
-    id: item.id || 'shared-' + index,
+    ...normalizeCustomCheat(item, 'shared-' + index),
     source: 'shared'
   }));
-  const localItems = getCustomCheats().map(item => ({ ...item, source: 'local' }));
-  const items = [...sharedItems, ...localItems];
+  const myItems = getSyncedCustomCheats().map((item, index) => ({
+    ...normalizeCustomCheat(item, 'mine-' + index),
+    source: 'mine'
+  }));
+  const items = [...myItems, ...sharedItems];
   list.innerHTML = '';
 
   if (!items.length) {
@@ -408,7 +436,7 @@ function renderCustomCheats() {
     right.style.gap = '8px';
 
     const isShared = item.source === 'shared';
-    right.appendChild(makeTextEl('span', isShared ? 'badge badge-blue' : 'badge badge-accent', isShared ? '공유' : '개인'));
+    right.appendChild(makeTextEl('span', isShared ? 'badge badge-blue' : 'badge badge-accent', isShared ? '기본' : '내 항목'));
     if (!isShared) {
       const del = document.createElement('button');
       del.className = 'delete-btn';
@@ -416,12 +444,12 @@ function renderCustomCheats() {
       del.textContent = '삭제';
       del.addEventListener('click', event => {
         event.stopPropagation();
-        saveCustomCheats(getCustomCheats().filter(saved => saved.id !== item.id));
+        setSyncedCustomCheats(getSyncedCustomCheats().filter(saved => saved.id !== item.id));
         renderCustomCheats();
       });
       right.appendChild(del);
     }
-    right.appendChild(makeTextEl('span', 'cmd-arrow', '▾'));
+    right.appendChild(makeTextEl('span', 'cmd-arrow', '⌄'));
     head.appendChild(right);
 
     const body = document.createElement('div');
@@ -455,6 +483,9 @@ async function initCustomCheats() {
   const form = document.getElementById('custom-form');
   if (!form) return;
 
+  try { await initCloudState(); } catch(e) {}
+  migrateLegacyCustomCheats();
+
   form.addEventListener('submit', event => {
     event.preventDefault();
     const title = document.getElementById('custom-title').value.trim();
@@ -463,9 +494,9 @@ async function initCustomCheats() {
 
     if (!title || !command) return;
 
-    const items = getCustomCheats();
+    const items = getSyncedCustomCheats();
     items.unshift({ id: Date.now().toString(36), title, command, desc });
-    saveCustomCheats(items);
+    setSyncedCustomCheats(items);
     form.reset();
     renderCustomCheats();
   });
@@ -474,6 +505,11 @@ async function initCustomCheats() {
   sharedCustomCheats = await loadSharedCustomCheats();
   renderCustomCheats();
 }
+
+document.addEventListener('cka-state-updated', () => {
+  migrateLegacyCustomCheats();
+  renderCustomCheats();
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   initTabs('tab-group');
