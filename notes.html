@@ -6,13 +6,14 @@
 <title>CKA 필기노트</title>
 <link rel="stylesheet" href="style.css">
 <style>
-.notes-layout { display: grid; grid-template-columns: 240px minmax(0,1fr); gap: 12px; align-items: start; }
+.notes-layout { display: grid; grid-template-columns: minmax(0,1fr); gap: 12px; align-items: start; }
 .note-list-pane, .note-pane { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-.note-list-pane { position: sticky; top: 76px; }
-.note-list { display: flex; flex-direction: column; gap: 6px; padding: 10px; }
+.note-list-pane { position: static; display: grid; grid-template-columns: 150px minmax(0,1fr); align-items: stretch; }
+.note-list-pane > .pane-head { border-bottom: 0; border-right: 1px solid var(--border); }
+.note-list { display: flex; gap: 8px; padding: 10px; overflow-x: auto; }
 .note-list-btn {
   border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--text2);
-  font-family: inherit; text-align: left; padding: 9px 10px; cursor: pointer;
+  font-family: inherit; text-align: left; padding: 9px 10px; cursor: pointer; min-width: 180px;
 }
 .note-list-btn:hover { background: var(--bg3); color: var(--text); }
 .note-list-btn.active { border-color: var(--accent); background: var(--accent-bg); color: var(--text); }
@@ -32,19 +33,19 @@
 .note-btn:hover { background: var(--bg3); color: var(--text); }
 .note-btn.primary { background: var(--text); color: var(--bg); border-color: var(--text); }
 .notes-shell { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; align-items: start; }
-.note-pane { min-height: 520px; }
+.note-pane { min-height: calc(100vh - 260px); }
 .pane-head {
   min-height: 38px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
   border-bottom: 1px solid var(--border); padding: 8px 12px; font-size: 12px; font-weight: 700; color: var(--text2);
 }
 .note-status { font-size: 11px; color: var(--text3); font-weight: 500; text-align: right; }
 .note-editor {
-  width: 100%; min-height: 520px; border: 0; resize: vertical; outline: none;
+  width: 100%; min-height: calc(100vh - 300px); border: 0; resize: vertical; outline: none;
   background: var(--bg2); color: var(--text); font: 13px/1.65 'SF Mono','Fira Code','Consolas',monospace;
   padding: 14px; display: block;
 }
 .note-preview {
-  min-height: 520px; padding: 18px; color: var(--text); overflow-wrap: anywhere;
+  min-height: calc(100vh - 300px); padding: 18px; color: var(--text); overflow-wrap: anywhere;
 }
 .note-preview h1, .note-preview h2, .note-preview h3 { line-height: 1.25; margin: 18px 0 8px; color: var(--text); }
 .note-preview h1 { font-size: 24px; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0; }
@@ -65,10 +66,13 @@
 .note-preview th { background: var(--bg3); color: var(--text); }
 .note-preview hr { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
 .file-input { display: none; }
+.page.notes-page { max-width: 1440px; }
 @media (max-width: 940px) {
-  .notes-layout, .notes-shell { grid-template-columns: 1fr; }
-  .note-list-pane { position: static; }
+  .notes-shell { grid-template-columns: 1fr; }
+  .note-list-pane { grid-template-columns: 1fr; }
+  .note-list-pane > .pane-head { border-right: 0; border-bottom: 1px solid var(--border); }
   .note-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+  .note-list-btn { min-width: 0; }
   .note-pane, .note-editor, .note-preview { min-height: 420px; }
 }
 </style>
@@ -88,7 +92,7 @@
   </div>
 </nav>
 
-<div class="page">
+<div class="page notes-page">
   <div class="page-title">📝 CKA 필기노트</div>
   <div class="page-sub">Daily Markdown notes · GitHub Pages · Obsidian ready</div>
 
