@@ -243,4 +243,5 @@ input[type="checkbox"].cb:checked { background: var(--accent); border-color: var
 @media (max-width: 600px) {
   .page { padding: 64px 14px 40px; }
   .nav-links .nav-link span { display: none; }
+  .nav-link { padding: 5px 9px; }
 }
