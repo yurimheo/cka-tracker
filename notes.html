@@ -6,7 +6,21 @@
 <title>CKA 필기노트</title>
 <link rel="stylesheet" href="style.css">
 <style>
-.notes-shell { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; align-items: start; }
+.notes-layout { display: grid; grid-template-columns: 240px minmax(0,1fr); gap: 12px; align-items: start; }
+.note-list-pane, .note-pane { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.note-list-pane { position: sticky; top: 76px; }
+.note-list { display: flex; flex-direction: column; gap: 6px; padding: 10px; }
+.note-list-btn {
+  border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--text2);
+  font-family: inherit; text-align: left; padding: 9px 10px; cursor: pointer;
+}
+.note-list-btn:hover { background: var(--bg3); color: var(--text); }
+.note-list-btn.active { border-color: var(--accent); background: var(--accent-bg); color: var(--text); }
+.note-date { display: block; font-size: 12px; font-weight: 800; }
+.note-title { display: block; margin-top: 3px; font-size: 12px; color: var(--text3); line-height: 1.35; }
+.note-list-btn.active .note-title { color: var(--text2); }
+.note-empty { padding: 14px; font-size: 12px; color: var(--text3); line-height: 1.6; }
+.notes-main { min-width: 0; }
 .notes-toolbar {
   display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;
   background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 10px;
@@ -17,12 +31,13 @@
 }
 .note-btn:hover { background: var(--bg3); color: var(--text); }
 .note-btn.primary { background: var(--text); color: var(--bg); border-color: var(--text); }
-.note-pane { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; min-height: 520px; }
+.notes-shell { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; align-items: start; }
+.note-pane { min-height: 520px; }
 .pane-head {
-  height: 38px; display: flex; align-items: center; justify-content: space-between;
-  border-bottom: 1px solid var(--border); padding: 0 12px; font-size: 12px; font-weight: 700; color: var(--text2);
+  min-height: 38px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  border-bottom: 1px solid var(--border); padding: 8px 12px; font-size: 12px; font-weight: 700; color: var(--text2);
 }
-.note-status { font-size: 11px; color: var(--text3); font-weight: 500; }
+.note-status { font-size: 11px; color: var(--text3); font-weight: 500; text-align: right; }
 .note-editor {
   width: 100%; min-height: 520px; border: 0; resize: vertical; outline: none;
   background: var(--bg2); color: var(--text); font: 13px/1.65 'SF Mono','Fira Code','Consolas',monospace;
@@ -50,8 +65,10 @@
 .note-preview th { background: var(--bg3); color: var(--text); }
 .note-preview hr { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
 .file-input { display: none; }
-@media (max-width: 820px) {
-  .notes-shell { grid-template-columns: 1fr; }
+@media (max-width: 940px) {
+  .notes-layout, .notes-shell { grid-template-columns: 1fr; }
+  .note-list-pane { position: static; }
+  .note-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
   .note-pane, .note-editor, .note-preview { min-height: 420px; }
 }
 </style>
@@ -73,62 +90,124 @@
 
 <div class="page">
   <div class="page-title">📝 CKA 필기노트</div>
-  <div class="page-sub">Markdown notes · notes.md sync · Obsidian ready</div>
+  <div class="page-sub">Daily Markdown notes · GitHub Pages · Obsidian ready</div>
 
-  <div class="notes-toolbar">
-    <button class="note-btn primary" id="save-btn">저장</button>
-    <button class="note-btn" id="load-md-btn">GitHub 노트 불러오기</button>
-    <button class="note-btn" id="download-btn">MD 다운로드</button>
-    <button class="note-btn" id="import-btn">MD 가져오기</button>
-    <button class="note-btn" id="copy-btn">복사</button>
-    <input class="file-input" id="file-input" type="file" accept=".md,.markdown,text/markdown,text/plain">
-  </div>
+  <div class="notes-layout">
+    <aside class="note-list-pane">
+      <div class="pane-head"><span>노트</span><span class="note-status" id="note-count">0개</span></div>
+      <div class="note-list" id="note-list"></div>
+    </aside>
 
-  <div class="notes-shell">
-    <section class="note-pane">
-      <div class="pane-head"><span>편집</span><span class="note-status" id="note-status">준비됨</span></div>
-      <textarea class="note-editor" id="note-editor" spellcheck="false"></textarea>
-    </section>
-    <section class="note-pane">
-      <div class="pane-head"><span>미리보기</span><span class="note-status">Markdown</span></div>
-      <div class="note-preview" id="note-preview"></div>
-    </section>
+    <main class="notes-main">
+      <div class="notes-toolbar">
+        <button class="note-btn primary" id="save-btn">저장</button>
+        <button class="note-btn" id="today-btn">오늘</button>
+        <button class="note-btn" id="load-md-btn">GitHub 원본</button>
+        <button class="note-btn" id="download-btn">MD 다운로드</button>
+        <button class="note-btn" id="import-btn">MD 가져오기</button>
+        <button class="note-btn" id="copy-btn">복사</button>
+        <input class="file-input" id="file-input" type="file" accept=".md,.markdown,text/markdown,text/plain">
+      </div>
+
+      <div class="notes-shell">
+        <section class="note-pane">
+          <div class="pane-head"><span id="editor-title">편집</span><span class="note-status" id="note-status">준비됨</span></div>
+          <textarea class="note-editor" id="note-editor" spellcheck="false"></textarea>
+        </section>
+        <section class="note-pane">
+          <div class="pane-head"><span>미리보기</span><span class="note-status">Markdown</span></div>
+          <div class="note-preview" id="note-preview"></div>
+        </section>
+      </div>
+    </main>
   </div>
 </div>
 
 <script src="common.js"></script>
 <script>
-const NOTE_KEY = 'cka-notes-md-v1';
-const STARTER_NOTE = `# CKA 필기노트
-
-## 오늘의 핵심
-
--
-
-## 오답 노트
-
-| 날짜 | 주제 | 틀린 이유 | 다시 풀 커맨드 |
-| --- | --- | --- | --- |
-|  |  |  |  |
-
-## 자주 헷갈리는 커맨드
-
-\`\`\`bash
-kubectl get pods -A -o wide
-kubectl describe pod <pod> -n <namespace>
-\`\`\`
-
-## 공식문서 링크
-
-- [Kubernetes Documentation](https://kubernetes.io/docs/)
-`;
+const NOTE_INDEX_URL = 'notes/index.json';
+const NOTE_STORE_PREFIX = 'cka-daily-note-md-v1:';
+const LEGACY_NOTE_KEY = 'cka-notes-md-v1';
 
 const editor = document.getElementById('note-editor');
 const preview = document.getElementById('note-preview');
 const statusEl = document.getElementById('note-status');
+const noteListEl = document.getElementById('note-list');
+const noteCountEl = document.getElementById('note-count');
+const editorTitleEl = document.getElementById('editor-title');
+
+let notes = [];
+let currentNote = null;
 
 function setStatus(text) {
   statusEl.textContent = text;
+}
+
+function todayIso() {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+}
+
+function compactDate(date) {
+  return date.replaceAll('-', '').slice(2);
+}
+
+function noteFile(date) {
+  return date + '.md';
+}
+
+function noteUrl(note) {
+  return 'notes/' + encodeURIComponent(note.file);
+}
+
+function noteKey(note) {
+  return NOTE_STORE_PREFIX + note.file;
+}
+
+function starterNote(date) {
+  return `# ${date} CKA 필기노트
+
+## 오늘 본 것
+
+-
+
+## 막힌 부분
+
+| 주제 | 막힌 이유 | 다시 확인할 것 |
+| --- | --- | --- |
+|  |  |  |
+
+## 커맨드 메모
+
+\`\`\`bash
+
+\`\`\`
+
+## 내일 볼 것
+
+-
+`;
+}
+
+function normalizeNote(item) {
+  const date = item.date || todayIso();
+  return {
+    date,
+    title: item.title || date + ' 필기노트',
+    file: item.file || noteFile(date),
+    localOnly: Boolean(item.localOnly)
+  };
+}
+
+function sortNotes(list) {
+  return list.slice().sort((a, b) => b.date.localeCompare(a.date));
+}
+
+function ensureTodayNote(list) {
+  const today = todayIso();
+  if (list.some(note => note.date === today)) return sortNotes(list);
+  return sortNotes([{ date: today, title: compactDate(today) + '-note', file: noteFile(today), localOnly: true }, ...list]);
 }
 
 function escapeHtml(text) {
@@ -262,30 +341,78 @@ function updatePreview() {
   preview.innerHTML = renderMarkdown(editor.value);
 }
 
+function renderNoteList() {
+  noteCountEl.textContent = notes.length + '개';
+  if (!notes.length) {
+    noteListEl.innerHTML = '<div class="note-empty">아직 노트가 없습니다.</div>';
+    return;
+  }
+  noteListEl.innerHTML = notes.map(note => {
+    const active = currentNote && note.file === currentNote.file ? ' active' : '';
+    const draft = localStorage.getItem(noteKey(note)) !== null ? ' · draft' : '';
+    const local = note.localOnly ? ' · local' : '';
+    return `<button class="note-list-btn${active}" data-file="${escapeHtml(note.file)}">
+      <span class="note-date">${escapeHtml(note.date)}</span>
+      <span class="note-title">${escapeHtml(note.title)}${draft}${local}</span>
+    </button>`;
+  }).join('');
+}
+
+async function fetchRepoNote(note) {
+  const res = await fetch(noteUrl(note) + '?v=' + Date.now());
+  if (!res.ok) throw new Error('not found');
+  return res.text();
+}
+
+async function selectNote(note, preferRepo = false) {
+  currentNote = note;
+  editorTitleEl.textContent = note.date + ' 편집';
+  renderNoteList();
+
+  const saved = localStorage.getItem(noteKey(note));
+  if (!preferRepo && saved !== null) {
+    editor.value = saved;
+    setStatus('로컬 draft');
+  } else {
+    try {
+      editor.value = await fetchRepoNote(note);
+      setStatus('GitHub 원본');
+    } catch(e) {
+      const legacy = note.date === todayIso() ? localStorage.getItem(LEGACY_NOTE_KEY) : null;
+      editor.value = legacy || starterNote(note.date);
+      setStatus(note.localOnly ? '오늘 새 노트' : '기본 템플릿');
+    }
+  }
+  updatePreview();
+}
+
 function saveNote() {
-  localStorage.setItem(NOTE_KEY, editor.value);
+  if (!currentNote) return;
+  localStorage.setItem(noteKey(currentNote), editor.value);
+  renderNoteList();
   setStatus('저장됨');
 }
 
 async function loadRepoNote() {
+  if (!currentNote) return;
   try {
-    const res = await fetch('notes.md?v=' + Date.now());
-    if (!res.ok) throw new Error('not found');
-    editor.value = await res.text();
-    saveNote();
+    editor.value = await fetchRepoNote(currentNote);
+    localStorage.setItem(noteKey(currentNote), editor.value);
     updatePreview();
-    setStatus('notes.md 불러옴');
+    renderNoteList();
+    setStatus('GitHub 원본 불러옴');
   } catch(e) {
-    setStatus('불러오기 실패');
+    setStatus('원본 없음');
   }
 }
 
 function downloadNote() {
+  if (!currentNote) return;
   const blob = new Blob([editor.value], { type: 'text/markdown;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'cka-notes.md';
+  a.download = currentNote.file;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -313,13 +440,38 @@ function importFile(file) {
   reader.readAsText(file);
 }
 
+async function loadIndex() {
+  try {
+    const res = await fetch(NOTE_INDEX_URL + '?v=' + Date.now());
+    if (!res.ok) throw new Error('not found');
+    const data = await res.json();
+    return Array.isArray(data) ? data.map(normalizeNote) : [];
+  } catch(e) {
+    return [];
+  }
+}
+
 editor.addEventListener('input', () => {
-  localStorage.setItem(NOTE_KEY, editor.value);
+  if (!currentNote) return;
+  localStorage.setItem(noteKey(currentNote), editor.value);
   updatePreview();
+  renderNoteList();
   setStatus('자동 저장됨');
 });
 
+noteListEl.addEventListener('click', event => {
+  const button = event.target.closest('.note-list-btn');
+  if (!button) return;
+  const note = notes.find(item => item.file === button.dataset.file);
+  if (note) selectNote(note);
+});
+
 document.getElementById('save-btn').addEventListener('click', saveNote);
+document.getElementById('today-btn').addEventListener('click', () => {
+  const today = todayIso();
+  const note = notes.find(item => item.date === today);
+  if (note) selectNote(note);
+});
 document.getElementById('load-md-btn').addEventListener('click', loadRepoNote);
 document.getElementById('download-btn').addEventListener('click', downloadNote);
 document.getElementById('copy-btn').addEventListener('click', copyNote);
@@ -331,15 +483,11 @@ document.getElementById('file-input').addEventListener('change', event => {
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const saved = localStorage.getItem(NOTE_KEY);
-  if (saved !== null) {
-    editor.value = saved;
-    setStatus('로컬 노트');
-  } else {
-    editor.value = STARTER_NOTE;
-    await loadRepoNote();
-  }
-  updatePreview();
+  notes = ensureTodayNote(await loadIndex());
+  const today = todayIso();
+  const initial = notes.find(note => note.date === today) || notes[0];
+  renderNoteList();
+  if (initial) await selectNote(initial);
 });
 </script>
 </body>
