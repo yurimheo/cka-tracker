@@ -32,6 +32,9 @@
 }
 .note-btn:hover { background: var(--bg3); color: var(--text); }
 .note-btn.primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+.note-btn.red { color: var(--red-text); }
+.note-btn.blue { color: var(--blue-text); }
+.note-btn.highlight { background: #fff2a8; color: #3a3000; border-color: #e5ce65; }
 .notes-shell { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; align-items: start; }
 .note-pane { min-height: calc(100vh - 260px); }
 .pane-head {
@@ -61,6 +64,11 @@
 .note-preview pre code { background: transparent; padding: 0; }
 .note-preview a { color: var(--accent); text-decoration: none; }
 .note-preview a:hover { text-decoration: underline; }
+.note-preview .note-color-red { color: var(--red-text); font-weight: 700; }
+.note-preview .note-color-blue { color: var(--blue-text); font-weight: 700; }
+.note-preview mark.note-highlight-yellow { background: #fff2a8; color: #3a3000; border-radius: 4px; padding: 1px 3px; }
+[data-theme="dark"] .note-btn.highlight,
+[data-theme="dark"] .note-preview mark.note-highlight-yellow { background: #6a5600; color: #fff0a6; border-color: #8a7105; }
 .note-preview table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px; }
 .note-preview th, .note-preview td { border: 1px solid var(--border); padding: 7px 8px; text-align: left; vertical-align: top; }
 .note-preview th { background: var(--bg3); color: var(--text); }
@@ -110,6 +118,9 @@
         <button class="note-btn" id="download-btn">MD 다운로드</button>
         <button class="note-btn" id="import-btn">MD 가져오기</button>
         <button class="note-btn" id="copy-btn">복사</button>
+        <button class="note-btn red" id="red-btn">빨강</button>
+        <button class="note-btn blue" id="blue-btn">파랑</button>
+        <button class="note-btn highlight" id="highlight-btn">형광펜</button>
         <input class="file-input" id="file-input" type="file" accept=".md,.markdown,text/markdown,text/plain">
       </div>
 
@@ -170,27 +181,25 @@ function noteKey(note) {
 }
 
 function starterNote(date) {
-  return `# ${date} CKA 필기노트
+  return `# CKA 필기노트
 
-## 오늘 본 것
+## 오늘의 필기
 
--
+## 오답 노트
 
-## 막힌 부분
+| 날짜 | 주제 | 틀린 이유 | 다시 풀 커맨드 |
+| --- | --- | --- | --- |
+|  |  |  |  |
 
-| 주제 | 막힌 이유 | 다시 확인할 것 |
-| --- | --- | --- |
-|  |  |  |
-
-## 커맨드 메모
+## 자주 헷갈리는 커맨드
 
 \`\`\`bash
-
+kubectl .....
 \`\`\`
 
-## 내일 볼 것
+## 공식문서 링크
 
--
+- [Kubernetes Documentation](https://kubernetes.io/docs/)
 `;
 }
 
@@ -226,6 +235,9 @@ function renderInline(text) {
     const tail = url.slice(cleanUrl.length);
     return prefix + '<a href="' + cleanUrl + '" target="_blank" rel="noopener">' + cleanUrl + '</a>' + tail;
   });
+  out = out.replace(/==(.+?)==/g, '<mark class="note-highlight-yellow">$1</mark>');
+  out = out.replace(/\{\{red:(.+?)\}\}/g, '<span class="note-color-red">$1</span>');
+  out = out.replace(/\{\{blue:(.+?)\}\}/g, '<span class="note-color-blue">$1</span>');
   out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
   out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   out = out.replace(/\*([^*]+)\*/g, '<em>$1</em>');
@@ -438,6 +450,16 @@ async function copyNote() {
   }
 }
 
+function wrapSelection(prefix, suffix, fallback) {
+  const start = editor.selectionStart;
+  const end = editor.selectionEnd;
+  const selected = editor.value.slice(start, end) || fallback;
+  const next = prefix + selected + suffix;
+  editor.setRangeText(next, start, end, 'select');
+  editor.focus();
+  editor.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
 function importFile(file) {
   const reader = new FileReader();
   reader.onload = () => {
@@ -484,6 +506,9 @@ document.getElementById('today-btn').addEventListener('click', () => {
 document.getElementById('load-md-btn').addEventListener('click', loadRepoNote);
 document.getElementById('download-btn').addEventListener('click', downloadNote);
 document.getElementById('copy-btn').addEventListener('click', copyNote);
+document.getElementById('red-btn').addEventListener('click', () => wrapSelection('{{red:', '}}', '중요'));
+document.getElementById('blue-btn').addEventListener('click', () => wrapSelection('{{blue:', '}}', '공식문서'));
+document.getElementById('highlight-btn').addEventListener('click', () => wrapSelection('==', '==', '형광펜'));
 document.getElementById('import-btn').addEventListener('click', () => document.getElementById('file-input').click());
 document.getElementById('file-input').addEventListener('change', event => {
   const file = event.target.files && event.target.files[0];
