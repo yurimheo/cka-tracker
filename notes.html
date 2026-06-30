@@ -32,23 +32,28 @@
 }
 .note-btn:hover { background: var(--bg3); color: var(--text); }
 .note-btn.primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+.note-btn.bold { color: var(--text); font-weight: 800; }
 .note-btn.red { color: var(--red-text); }
 .note-btn.blue { color: var(--blue-text); }
 .note-btn.highlight { background: #fff2a8; color: #3a3000; border-color: #e5ce65; }
 .notes-shell { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; align-items: start; }
-.note-pane { min-height: calc(100vh - 260px); }
+.note-pane { height: calc(100vh - 260px); min-height: 500px; display: flex; flex-direction: column; }
 .pane-head {
   min-height: 38px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
   border-bottom: 1px solid var(--border); padding: 8px 12px; font-size: 12px; font-weight: 700; color: var(--text2);
 }
+.format-toolbar {
+  display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--border);
+  background: var(--bg2); padding: 8px 10px;
+}
 .note-status { font-size: 11px; color: var(--text3); font-weight: 500; text-align: right; }
 .note-editor {
-  width: 100%; min-height: calc(100vh - 300px); border: 0; resize: vertical; outline: none;
+  width: 100%; flex: 1; min-height: 0; border: 0; resize: none; outline: none; overflow-y: auto;
   background: var(--bg2); color: var(--text); font: 13px/1.65 'SF Mono','Fira Code','Consolas',monospace;
   padding: 14px; display: block;
 }
 .note-preview {
-  min-height: calc(100vh - 300px); padding: 18px; color: var(--text); overflow-wrap: anywhere;
+  flex: 1; min-height: 0; padding: 18px; color: var(--text); overflow-wrap: anywhere; overflow-y: auto;
 }
 .note-preview h1, .note-preview h2, .note-preview h3 { line-height: 1.25; margin: 18px 0 8px; color: var(--text); }
 .note-preview h1 { font-size: 24px; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 0; }
@@ -81,7 +86,8 @@
   .note-list-pane > .pane-head { border-right: 0; border-bottom: 1px solid var(--border); }
   .note-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
   .note-list-btn { min-width: 0; }
-  .note-pane, .note-editor, .note-preview { min-height: 420px; }
+  .note-pane { height: auto; min-height: 420px; }
+  .note-editor, .note-preview { min-height: 420px; }
 }
 </style>
 </head>
@@ -118,15 +124,18 @@
         <button class="note-btn" id="download-btn">MD 다운로드</button>
         <button class="note-btn" id="import-btn">MD 가져오기</button>
         <button class="note-btn" id="copy-btn">복사</button>
-        <button class="note-btn red" id="red-btn">빨강</button>
-        <button class="note-btn blue" id="blue-btn">파랑</button>
-        <button class="note-btn highlight" id="highlight-btn">형광펜</button>
         <input class="file-input" id="file-input" type="file" accept=".md,.markdown,text/markdown,text/plain">
       </div>
 
       <div class="notes-shell">
         <section class="note-pane">
           <div class="pane-head"><span id="editor-title">편집</span><span class="note-status" id="note-status">준비됨</span></div>
+          <div class="format-toolbar">
+            <button class="note-btn bold" id="bold-btn">B</button>
+            <button class="note-btn red" id="red-btn">빨강</button>
+            <button class="note-btn blue" id="blue-btn">파랑</button>
+            <button class="note-btn highlight" id="highlight-btn">형광펜</button>
+          </div>
           <textarea class="note-editor" id="note-editor" spellcheck="false"></textarea>
         </section>
         <section class="note-pane">
@@ -506,6 +515,7 @@ document.getElementById('today-btn').addEventListener('click', () => {
 document.getElementById('load-md-btn').addEventListener('click', loadRepoNote);
 document.getElementById('download-btn').addEventListener('click', downloadNote);
 document.getElementById('copy-btn').addEventListener('click', copyNote);
+document.getElementById('bold-btn').addEventListener('click', () => wrapSelection('**', '**', '볼드'));
 document.getElementById('red-btn').addEventListener('click', () => wrapSelection('{{red:', '}}', '중요'));
 document.getElementById('blue-btn').addEventListener('click', () => wrapSelection('{{blue:', '}}', '공식문서'));
 document.getElementById('highlight-btn').addEventListener('click', () => wrapSelection('==', '==', '형광펜'));
