@@ -21,21 +21,14 @@
 .block-title.bp{background:var(--red-bg);color:var(--red-text);}
 .block-title.bd{background:var(--purple-bg);color:var(--purple-text);}
 .block-title.bk{background:var(--gray-bg);color:var(--gray-text);}
-.toggle-card.day-complete{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 24%,transparent),0 12px 30px color-mix(in srgb,var(--accent) 13%,transparent);}
-.toggle-card.day-complete .toggle-head{background:linear-gradient(90deg,color-mix(in srgb,var(--accent-bg) 74%,transparent),var(--bg2));}
+.toggle-card.day-complete{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 18%,transparent),0 10px 24px color-mix(in srgb,var(--accent) 10%,transparent);}
+.toggle-card.day-complete .toggle-head{background:linear-gradient(90deg,color-mix(in srgb,var(--accent-bg) 72%,transparent),var(--bg2));}
 .toggle-card.day-complete .toggle-date,.toggle-card.day-complete .toggle-goal{color:var(--accent);}
-.toggle-card.day-complete .toggle-time{color:var(--accent);}
+.toggle-card.day-complete .toggle-time,.toggle-card.day-complete .day-state{color:var(--accent);}
 .toggle-card.day-complete .type-bar{width:7px;background:var(--accent)!important;}
 .toggle-card.day-complete .toggle-arrow{color:var(--accent);}
-.day-state{display:inline-flex;align-items:center;gap:6px;margin-top:7px;font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--text3);}
-.day-state::before{content:"";width:14px;height:14px;border-radius:50%;border:1px solid var(--border2);background:var(--bg);display:inline-block;}
-.toggle-card.day-complete .day-state{color:var(--accent);}
-.toggle-card.day-complete .day-state::before{content:"OK";display:inline-flex;align-items:center;justify-content:center;background:var(--accent);border-color:var(--accent);color:var(--bg);font-size:7px;line-height:1;}
-.day-done-stamp{display:none;margin-top:7px;width:max-content;border-radius:999px;background:var(--accent);color:var(--bg);font-size:10px;font-weight:800;letter-spacing:.08em;padding:2px 8px;}
-.toggle-card.day-complete .day-done-stamp{display:block;}
-.day-complete-pill{display:none;margin-left:8px;border-radius:999px;background:var(--accent);color:var(--bg);font-size:10px;font-weight:800;letter-spacing:.06em;padding:2px 8px;vertical-align:middle;}
-.toggle-card.day-complete .day-complete-pill{display:inline-block;}
-.toggle-card.day-complete .toggle-main::after{content:"오늘치 끝";display:inline-flex;margin-top:7px;border-radius:999px;background:var(--accent-bg);color:var(--accent);font-size:11px;font-weight:800;padding:3px 9px;}
+.toggle-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:3px;}
+.day-state{font-size:11px;font-weight:700;color:var(--text3);white-space:nowrap;}
 .sync-panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;}
 .sync-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;} .sync-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;list-style:none;} .sync-summary::-webkit-details-marker{display:none;} .sync-summary::after{content:"펼치기";font-size:11px;font-weight:500;color:var(--text3);} .sync-panel[open] .sync-summary{margin-bottom:10px;} .sync-panel[open] .sync-summary::after{content:"접기";}
 .sync-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:10px;}
@@ -278,7 +271,11 @@ function sk(w,d,b,i){return`${w}-${d}-${b}-${i}`;}
 function dayStats(wi,di){
   const day=WEEKS[wi].days[di];
   let total=0,done=0;
-  day.blocks.forEach((b,bi)=>b.items.forEach((_,ii)=>{total++;if(stateGet(sk(wi,di,bi,ii))===true)done++;}));
+  day.blocks.forEach((b,bi)=>b.items.forEach((it,ii)=>{
+    if(isCalloutItem(it))return;
+    total++;
+    if(stateGet(sk(wi,di,bi,ii))===true)done++;
+  }));
   return{total,done,complete:total>0&&done===total};
 }
 function wck(w,c){return`wc-${w}-${c}`;}
@@ -317,7 +314,7 @@ function renderWeek(){
     }).join('');
     const memo=stateGet(`memo-${CW}-${di}`)||'';
     const dow=d.dow?`<div class="toggle-dow">${d.dow}요일</div>`:'';
-    return`<div class="toggle-card${ds.complete?' day-complete':''}" data-day="${CW}-${di}"><div class="toggle-head" onclick="toggleCard(this)"><div class="type-bar" style="background:${tc.bar}"></div><div class="toggle-info"><div class="toggle-date">${d.d}</div>${dow}<span class="badge ${tc.bdg}" style="margin-top:5px;display:inline-block">${tc.lbl}</span><div class="day-state">${ds.done}/${ds.total}</div><div class="day-done-stamp">DONE</div></div><div class="toggle-main"><div class="toggle-goal">${d.goal}<span class="day-complete-pill">완료</span></div><div class="toggle-time">⏱ ${d.time}</div></div><div class="toggle-arrow">▾</div></div><div class="toggle-body">${blocks}<div class="memo-wrap"><div class="memo-label">메모</div><textarea class="memo-textarea" placeholder="이 날 공부 메모..." oninput="saveMemo(${CW},${di},this.value)">${memo}</textarea></div></div></div>`;
+    return`<div class="toggle-card${ds.complete?' day-complete':''}" data-day="${CW}-${di}"><div class="toggle-head" onclick="toggleCard(this)"><div class="type-bar" style="background:${tc.bar}"></div><div class="toggle-info"><div class="toggle-date">${d.d}</div>${dow}<span class="badge ${tc.bdg}" style="margin-top:5px;display:inline-block">${tc.lbl}</span></div><div class="toggle-main"><div class="toggle-goal">${d.goal}</div><div class="toggle-meta"><div class="toggle-time">⏱ ${d.time}</div><div class="day-state">${ds.done}/${ds.total}${ds.complete?' (완료)':''}</div></div></div><div class="toggle-arrow">▾</div></div><div class="toggle-body">${blocks}<div class="memo-wrap"><div class="memo-label">메모</div><textarea class="memo-textarea" placeholder="이 날 공부 메모..." oninput="saveMemo(${CW},${di},this.value)">${memo}</textarea></div></div></div>`;
   }).join('');
 }
 function refreshDayCompletion(wi,di){
@@ -326,7 +323,7 @@ function refreshDayCompletion(wi,di){
   const ds=dayStats(wi,di);
   card.classList.toggle('day-complete',ds.complete);
   const state=card.querySelector('.day-state');
-  if(state)state.textContent=`${ds.done}/${ds.total}`;
+  if(state)state.textContent=`${ds.done}/${ds.total}${ds.complete?' (완료)':''}`;
 }
 function tItem(wi,di,bi,ii,v){stateSet(sk(wi,di,bi,ii),v);const l=document.querySelector(`label[for="cb${wi}-${di}-${bi}-${ii}"]`);if(l)l.classList.toggle('done',v);refreshDayCompletion(wi,di);updateProg();}
 function tWC(wi,ci,v){stateSet(wck(wi,ci),v);const l=document.querySelector(`label[for="wc${wi}-${ci}"]`);if(l)l.classList.toggle('done',v);updateProg();}
